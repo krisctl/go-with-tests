@@ -31,3 +31,22 @@ func TestAreaWithInterface(t *testing.T) {
 		checkArea(t, shape, math.Pi*shape.radius*shape.radius)
 	})
 }
+
+func TestAreaWithTables(t *testing.T) {
+	areaTests := []struct {
+		name  string
+		shape Shape
+		want  float64
+	}{
+		{"Area of Rectangle", Rectangle{width: 10, height: 12}, 120},
+		{"Area of Circle", Circle{radius: 10}, 314.1592653589793},
+		{"Area of Triangle", Triangle{base: 10, height: 12}, 60},
+	}
+
+	for _, test := range areaTests {
+		t.Run(test.name, func(t *testing.T) {
+			got := test.shape.Area()
+			assert.Equal(t, test.want, got, fmt.Sprintf("Shape: %#v, Area is not equal, got %g, want %g", test.shape, got, test.want))
+		})
+	}
+}
