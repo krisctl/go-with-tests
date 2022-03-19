@@ -1,6 +1,13 @@
 package ptr
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+const (
+	ErrInsufficientFunds = "withdrawal error: insufficient funds"
+)
 
 type Bitcoin int
 
@@ -16,8 +23,12 @@ func (w *Wallet) Deposit(coins Bitcoin) {
 	w.balance += coins
 }
 
-func (w *Wallet) Withdraw(coins Bitcoin) {
+func (w *Wallet) Withdraw(coins Bitcoin) error {
+	if coins > w.balance {
+		return errors.New(ErrInsufficientFunds)
+	}
 	w.balance -= coins
+	return nil
 }
 
 func (b Bitcoin) String() string {
