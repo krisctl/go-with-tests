@@ -13,3 +13,7 @@ func (d Dictionary) Find(k string) (string, error) {
 	}
 	return v, nil
 }
+
+func (d Dictionary) Add(k, v string) {
+	d[k] = v
+}
