@@ -21,7 +21,7 @@ func TestDictionaryTable(t *testing.T) {
 		err   error
 	}{
 		{name: "find, key present", key: "k2", value: "v2", err: nil},
-		{name: "find, key not present", key: "nk3", value: "", err: errDidNotFindKey},
+		{name: "find, key not present", key: "nk3", value: "", err: ErrDidNotFindKey},
 	}
 	d := Dictionary{"k2": "v2"}
 	for _, tC := range testCases {
@@ -33,22 +33,28 @@ func TestDictionaryTable(t *testing.T) {
 	}
 }
 
-func TestDictionaryAdd(t *testing.T) {
-	testCases := []struct {
-		name  string
-		key   string
-		value string
-		err   error
-	}{
-		{name: "add_find_key", key: "k1", value: "v1", err: nil},
+func TestAdd(t *testing.T) {
+	var assertDefinition = func(t *testing.T, dict Dictionary, word, definition string) {
+		got, _ := dict.Find(word)
+		assert.Equal(t, definition, got, "Not matching, want: %s, got: %s", definition, got)
 	}
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			dict := Dictionary{}
-			dict.Add("k1", "v1")
-			got, err := dict.Find(tc.key)
-			assert.Equal(t, tc.value, got, "Not matching, want: %s, got: %s")
-			assert.Equal(t, tc.err, err, "Errors are not matching, want: %#v, got: %#v")
-		})
-	}
+	t.Run("add new word", func(t *testing.T) {
+		dict := Dictionary{}
+		word := "test"
+		definition := "this is just a test"
+		err := dict.Add(word, definition)
+		assertDefinition(t, dict, word, definition)
+		assert.Nil(t, err, "Error is not nil, want: %#v, got: %#v", nil, err)
+	})
+	t.Run("add existing word", func(t *testing.T) {
+		dict := Dictionary{}
+		word := "test"
+		def1 := "original"
+		def2 := "updated"
+		err := dict.Add(word, def1)
+		err = dict.Add(word, def2)
+		assertDefinition(t, dict, word, def1)
+		assert.EqualError(t, err, ErrWordExists.Error(), "errors does not match")
+	})
+
 }
