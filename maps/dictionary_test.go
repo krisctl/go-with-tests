@@ -34,10 +34,6 @@ func TestDictionaryTable(t *testing.T) {
 }
 
 func TestAdd(t *testing.T) {
-	var assertDefinition = func(t *testing.T, dict Dictionary, word, definition string) {
-		got, _ := dict.Find(word)
-		assert.Equal(t, definition, got, "Not matching, want: %s, got: %s", definition, got)
-	}
 	t.Run("add new word", func(t *testing.T) {
 		dict := Dictionary{}
 		word := "test"
@@ -52,9 +48,24 @@ func TestAdd(t *testing.T) {
 		def1 := "original"
 		def2 := "updated"
 		err := dict.Add(word, def1)
+		assert.Nil(t, err, "Expected first error to be nil but got: %#v", err)
 		err = dict.Add(word, def2)
 		assertDefinition(t, dict, word, def1)
 		assert.EqualError(t, err, ErrWordExists.Error(), "errors does not match")
 	})
+}
 
+func TestUpdate(t *testing.T) {
+	dict := Dictionary{}
+	word := "test"
+	definition := "this is original test"
+	updatedDef := "this is updated test"
+	dict.Add(word, definition)
+	dict.Update(word, updatedDef)
+	assertDefinition(t, dict, word, updatedDef)
+}
+
+func assertDefinition(t *testing.T, dict Dictionary, word, definition string) {
+	got, _ := dict.Find(word)
+	assert.Equal(t, definition, got, "Not matching, want: %s, got: %s", definition, got)
 }
