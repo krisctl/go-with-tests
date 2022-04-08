@@ -6,6 +6,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	word       = "test"
+	definition = "this is original definition"
+	updatedDef = "this is updated definition"
+)
+
 func TestDictionary(t *testing.T) {
 	d := Dictionary{"k1": "v1"}
 	want := "v1"
@@ -36,33 +42,42 @@ func TestDictionaryTable(t *testing.T) {
 func TestAdd(t *testing.T) {
 	t.Run("add new word", func(t *testing.T) {
 		dict := Dictionary{}
-		word := "test"
-		definition := "this is just a test"
 		err := dict.Add(word, definition)
 		assertDefinition(t, dict, word, definition)
 		assert.Nil(t, err, "Error is not nil, want: %#v, got: %#v", nil, err)
 	})
 	t.Run("add existing word", func(t *testing.T) {
 		dict := Dictionary{}
-		word := "test"
-		def1 := "original"
-		def2 := "updated"
-		err := dict.Add(word, def1)
+		err := dict.Add(word, definition)
 		assert.Nil(t, err, "Expected first error to be nil but got: %#v", err)
-		err = dict.Add(word, def2)
-		assertDefinition(t, dict, word, def1)
+		err = dict.Add(word, updatedDef)
+		assertDefinition(t, dict, word, definition)
 		assert.EqualError(t, err, ErrWordExists.Error(), "errors does not match")
 	})
 }
 
 func TestUpdate(t *testing.T) {
-	dict := Dictionary{}
-	word := "test"
-	definition := "this is original test"
-	updatedDef := "this is updated test"
-	dict.Add(word, definition)
-	dict.Update(word, updatedDef)
-	assertDefinition(t, dict, word, updatedDef)
+	t.Run("update_no_existing_key", func(t *testing.T) {
+		dict := Dictionary{}
+		err := dict.Update(word, updatedDef)
+		assert.EqualError(t, err, ErrWordDoesNotExist.Error(), "Erros not equal, got: %#v, want: %#v", err, ErrDidNotFindKey)
+		assertDefinition(t, dict, word, "")
+	})
+	t.Run("update_existing_key", func(t *testing.T) {
+		dict := Dictionary{}
+		dict.Add(word, definition)
+		err := dict.Update(word, updatedDef)
+		assert.Nil(t, err, "Expected nil error, got: %#v", err)
+		assertDefinition(t, dict, word, updatedDef)
+	})
+}
+
+func TestDelete(t *testing.T) {
+	dict := Dictionary{word: definition}
+	dict.Delete(word)
+	value, err := dict.Find(word)
+	assert.Empty(t, value, "Expected empty value, got: %s", value)
+	assert.EqualError(t, err, ErrDidNotFindKey.Error(), "Erros not equal, got: %#v, want: %#v", err, ErrDidNotFindKey)
 }
 
 func assertDefinition(t *testing.T, dict Dictionary, word, definition string) {

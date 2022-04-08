@@ -9,8 +9,9 @@ func (de DictionaryError) Error() string {
 }
 
 const (
-	ErrDidNotFindKey = DictionaryError("could not find the word you were looking for")
-	ErrWordExists    = DictionaryError("word already exists in the map")
+	ErrDidNotFindKey    = DictionaryError("could not find the word you were looking for")
+	ErrWordExists       = DictionaryError("word already exists in the map")
+	ErrWordDoesNotExist = DictionaryError("word does not exist")
 )
 
 func (d Dictionary) Find(k string) (string, error) {
@@ -36,6 +37,18 @@ func (d Dictionary) Add(k, v string) error {
 }
 
 func (d Dictionary) Update(k, v string) error {
-	d[k] = v
+	_, err := d.Find(k)
+	switch err {
+	case ErrDidNotFindKey:
+		return ErrWordDoesNotExist
+	case nil:
+		d[k] = v
+	default:
+		return err
+	}
 	return nil
+}
+
+func (d Dictionary) Delete(k string) {
+	delete(d, k)
 }
